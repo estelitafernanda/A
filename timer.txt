@@ -1,0 +1,92 @@
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.std_logic_unsigned.all;
+
+entity Timer is 
+    port (
+        clk     :   in      std_logic;      
+        nRst    :   in      std_logic;      
+        segmentos_seg_u  :   out std_logic_vector(0 to 6);
+        segmentos_seg_d  :   out std_logic_vector(0 to 6); 
+        segmentos_min_u  :   out std_logic_vector(0 to 6);
+        segmentos_min_d  :   out std_logic_vector(0 to 6); 
+        segmentos_hora_u :   out std_logic_vector(0 to 6); 
+        segmentos_hora_d :   out std_logic_vector(0 to 6)  
+    );
+end Timer ;
+
+architecture Comportamento of Timer  is
+	 
+	 COMPONENT Decodificador is
+    Port ( 
+        digito : in  integer range 0 to 9;
+        segmentos : out std_logic_vector(6 downto 0)
+    );
+	end COMPONENT Decodificador;
+	
+	 signal s, m, h : integer range 0 to 59;  
+
+    signal digito_seg_u : integer range 0 to 9; 
+    signal digito_seg_d : integer range 0 to 5; 
+    signal digito_min_u : integer range 0 to 9; 
+    signal digito_min_d : integer range 0 to 5; 
+    signal digito_hora_u : integer range 0 to 4;
+    signal digito_hora_d : integer range 0 to 2; 
+	
+
+begin
+    process(clk, nRst)
+    begin
+        if nRst = '1' then
+            
+            s <= 0;
+            m <= 0;
+            h <= 0;
+        elsif clk'event and clk = '1' then
+            
+                if s = 59 then             
+                    s <= 0;
+                    if m = 59 then        
+                        m <= 0;
+                        if h = 23 then     
+                            h <= 0;
+                        else
+                            h <= h + 1;
+                        end if;
+                    else
+                        m <= m + 1;
+                    end if;
+                else
+                    s <= s + 1;
+                end if;
+            
+        end if;
+    end process;
+
+    
+    digito_seg_u <= s mod 10;  
+    digito_seg_d <= s / 10;    
+    digito_min_u <= m mod 10;  
+    digito_min_d <= m / 10;   
+    digito_hora_u <= h mod 10; 
+    digito_hora_d <= h / 10;   
+
+    u1: Decodificador
+			port map (digito_seg_u, segmentos_seg_u);
+
+    d1: Decodificador
+        port map (digito_seg_d, segmentos_seg_d);
+
+    u2: Decodificador
+        port map (digito_min_u, segmentos_min_u);
+
+    d2: Decodificador
+        port map (digito_min_d, segmentos_min_d);
+
+    u3: Decodificador
+        port map (digito_hora_u, segmentos_hora_u);
+
+    d3: Decodificador
+        port map (digito_hora_d, segmentos_hora_d);
+
+end Comportamento;
