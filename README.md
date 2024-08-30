@@ -1,1 +1,1 @@
-# VHDL
+# CLOCK-VHDL
